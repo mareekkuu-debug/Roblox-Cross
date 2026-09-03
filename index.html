@@ -45,7 +45,6 @@
             cursor: pointer;
             transition: all 0.3s ease;
             position: relative;
-            overflow: hidden;
         }
 
         .box:hover {
@@ -65,27 +64,76 @@
             color: #888888;
         }
 
-        /* Color Selection Overlay Menu */
-        .color-menu {
-            position: absolute;
+        /* Modal / Window Overlay */
+        .modal-overlay {
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: #161616;
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            padding: 20px;
-            box-sizing: border-box;
+            background-color: rgba(0, 0, 0, 0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s ease;
+            z-index: 100000;
         }
 
-        .color-menu.active {
+        .modal-overlay.active {
             opacity: 1;
             pointer-events: auto;
+        }
+
+        .modal-window {
+            background-color: #1a1a1a;
+            border: 1px solid #333333;
+            border-radius: 16px;
+            padding: 24px;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal-window {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #888888;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .close-btn:hover {
+            color: #ffffff;
+        }
+
+        /* 2x5 Grid Layout for Small Choice Boxes */
+        .grid-2x5 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(5, 70px);
+            gap: 12px;
         }
 
         .small-box {
@@ -93,10 +141,11 @@
             border: 2px solid transparent;
             cursor: pointer;
             transition: transform 0.2s ease, border-color 0.2s ease;
+            background-color: #262626; /* Fallback */
         }
 
         .small-box:hover {
-            transform: scale(1.05);
+            transform: scale(1.02);
             border-color: #ffffff;
         }
 
@@ -114,24 +163,35 @@
 
     <div class="container">
         <!-- Box 1 -->
-        <div class="box" onclick="toggleMenu(this, event)">
+        <div class="box" id="box1" onclick="openMenu('box1')">
             <span class="plus-icon">+</span>
-            <div class="color-menu">
-                <div class="small-box" style="background-color: #ff4757;" onclick="selectColor(this, '#ff4757', event)"></div>
-                <div class="small-box" style="background-color: #2ed573;" onclick="selectColor(this, '#2ed573', event)"></div>
-                <div class="small-box" style="background-color: #1e90ff;" onclick="selectColor(this, '#1e90ff', event)"></div>
-                <div class="small-box" style="background-color: #ffa502;" onclick="selectColor(this, '#ffa502', event)"></div>
-            </div>
         </div>
 
         <!-- Box 2 -->
-        <div class="box" onclick="toggleMenu(this, event)">
+        <div class="box" id="box2" onclick="openMenu('box2')">
             <span class="plus-icon">+</span>
-            <div class="color-menu">
-                <div class="small-box" style="background-color: #ff4757;" onclick="selectColor(this, '#ff4757', event)"></div>
-                <div class="small-box" style="background-color: #2ed573;" onclick="selectColor(this, '#2ed573', event)"></div>
-                <div class="small-box" style="background-color: #1e90ff;" onclick="selectColor(this, '#1e90ff', event)"></div>
-                <div class="small-box" style="background-color: #ffa502;" onclick="selectColor(this, '#ffa502', event)"></div>
+        </div>
+    </div>
+
+    <!-- Selection Window Overlay -->
+    <div class="modal-overlay" id="menuOverlay" onclick="closeMenu(event)">
+        <div class="modal-window" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 class="modal-title">Select an Option</h3>
+                <button class="close-btn" onclick="closeMenu(event)">&times;</button>
+            </div>
+            <!-- 2x5 Grid containing 10 small colored selection boxes -->
+            <div class="grid-2x5">
+                <div class="small-box" style="background-color: #ff4757;" onclick="selectOption('#ff4757')"></div>
+                <div class="small-box" style="background-color: #2ed573;" onclick="selectOption('#2ed573')"></div>
+                <div class="small-box" style="background-color: #1e90ff;" onclick="selectOption('#1e90ff')"></div>
+                <div class="small-box" style="background-color: #ffa502;" onclick="selectOption('#ffa502')"></div>
+                <div class="small-box" style="background-color: #9b59b6;" onclick="selectOption('#9b59b6')"></div>
+                <div class="small-box" style="background-color: #34495e;" onclick="selectOption('#34495e')"></div>
+                <div class="small-box" style="background-color: #1abc9c;" onclick="selectOption('#1abc9c')"></div>
+                <div class="small-box" style="background-color: #e67e22;" onclick="selectOption('#e67e22')"></div>
+                <div class="small-box" style="background-color: #e84393;" onclick="selectOption('#e84393')"></div>
+                <div class="small-box" style="background-color: #6c5ce7;" onclick="selectOption('#6c5ce7')"></div>
             </div>
         </div>
     </div>
@@ -146,27 +206,30 @@
     <!-- END AADS AD UNIT 2454241 -->
 
     <script>
-        function toggleMenu(mainBox, event) {
-            // Prevent event from bubbling if clicking inside the menu
-            if (event.target.closest('.color-menu')) return;
-            
-            const menu = mainBox.querySelector('.color-menu');
-            menu.classList.toggle('active');
+        let activeBoxId = null;
+
+        function openMenu(boxId) {
+            activeBoxId = boxId;
+            document.getElementById('menuOverlay').classList.add('active');
         }
 
-        function selectColor(smallBox, colorHex, event) {
-            // Stop click from triggering toggleMenu again
-            event.stopPropagation();
-            
-            const mainBox = smallBox.closest('.box');
-            const menu = mainBox.querySelector('.color-menu');
-            const plusIcon = mainBox.querySelector('.plus-icon');
-            
-            // Apply chosen color to main box background and hide menu
-            mainBox.style.backgroundColor = colorHex;
-            mainBox.style.borderColor = 'transparent';
-            plusIcon.style.display = 'none';
-            menu.classList.remove('active');
+        function closeMenu(event) {
+            if (event) event.stopPropagation();
+            document.getElementById('menuOverlay').classList.remove('active');
+            activeBoxId = null;
+        }
+
+        function selectOption(colorHex) {
+            if (activeBoxId) {
+                const targetBox = document.getElementById(activeBoxId);
+                const plusIcon = targetBox.querySelector('.plus-icon');
+                
+                // Change the main box background color
+                targetBox.style.backgroundColor = colorHex;
+                targetBox.style.borderColor = 'transparent';
+                plusIcon.style.display = 'none';
+            }
+            closeMenu();
         }
     </script>
 </body>
