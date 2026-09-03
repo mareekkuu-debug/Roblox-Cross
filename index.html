@@ -30,7 +30,7 @@
         .container {
             display: flex;
             gap: 2rem;
-            margin-bottom: 3rem;
+            margin-bottom: 2rem;
         }
 
         .box {
@@ -62,6 +62,45 @@
 
         .box:hover .plus-icon {
             color: #888888;
+        }
+
+        /* Action Buttons Wrapper */
+        .action-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 3rem;
+            width: 100%;
+        }
+
+        /* Done Button Styles */
+        .done-btn {
+            background-color: #1a1a1a;
+            color: #555555;
+            border: 1px solid #333333;
+            padding: 14px 50px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: not-allowed;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* Active Done Button State */
+        .done-btn.active {
+            background-color: #2ed573;
+            color: #ffffff;
+            border-color: #2ed573;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(46, 213, 115, 0.4);
+        }
+
+        .done-btn.active:hover {
+            background-color: #26af5f;
+            transform: translateY(-2px);
         }
 
         /* Modal / Window Overlay */
@@ -141,7 +180,7 @@
             border: 2px solid transparent;
             cursor: pointer;
             transition: transform 0.2s ease, border-color 0.2s ease;
-            background-color: #262626; /* Fallback */
+            background-color: #262626;
         }
 
         .small-box:hover {
@@ -173,14 +212,20 @@
         </div>
     </div>
 
+    <!-- Action Container containing the Done Button -->
+    <div class="action-container">
+        <button id="doneButton" class="done-btn" onclick="submitSelection()" disabled>Done</button>
+    </div>
+
     <!-- Selection Window Overlay -->
     <div class="modal-overlay" id="menuOverlay" onclick="closeMenu(event)">
         <div class="modal-window" onclick="event.stopPropagation()">
             <div class="modal-header">
-                <h3 class="modal-title">Select an Option</h3>
+                <!-- Text updated to "Select a game" -->
+                <h3 class="modal-title">Select a game</h3>
                 <button class="close-btn" onclick="closeMenu(event)">&times;</button>
             </div>
-            <!-- 2x5 Grid containing 10 small colored selection boxes -->
+            <!-- 2x5 Grid containing 10 small selection boxes -->
             <div class="grid-2x5">
                 <div class="small-box" style="background-color: #ff4757;" onclick="selectOption('#ff4757')"></div>
                 <div class="small-box" style="background-color: #2ed573;" onclick="selectOption('#2ed573')"></div>
@@ -207,6 +252,12 @@
 
     <script>
         let activeBoxId = null;
+        
+        // Track the choice status of both slots
+        const choices = {
+            box1: null,
+            box2: null
+        };
 
         function openMenu(boxId) {
             activeBoxId = boxId;
@@ -224,12 +275,35 @@
                 const targetBox = document.getElementById(activeBoxId);
                 const plusIcon = targetBox.querySelector('.plus-icon');
                 
-                // Change the main box background color
+                // Save selection internally
+                choices[activeBoxId] = colorHex;
+                
+                // Update Main UI box looks
                 targetBox.style.backgroundColor = colorHex;
                 targetBox.style.borderColor = 'transparent';
                 plusIcon.style.display = 'none';
+                
+                // Evaluate if Done button can wake up
+                checkValidation();
             }
             closeMenu();
+        }
+
+        function checkValidation() {
+            const doneButton = document.getElementById('doneButton');
+            
+            // Only unlock if BOTH slots have been assigned values
+            if (choices.box1 !== null && choices.box2 !== null) {
+                doneButton.classList.add('active');
+                doneButton.removeAttribute('disabled');
+            } else {
+                doneButton.classList.remove('active');
+                doneButton.setAttribute('disabled', 'true');
+            }
+        }
+
+        function submitSelection() {
+            alert(`Pair Confirmed!\nBox 1: ${choices.box1}\nBox 2: ${choices.box2}`);
         }
     </script>
 </body>
